@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>映宇宙迷宫星球</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background-color: #f0f8ff;
+        }
+        .game-container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+        .input-container {
+            position: relative;
+            display: inline-block;
+            width: 80%;
+            margin-top: 10px;
+        }
+        input {
+            padding: 10px;
+            width: 100%;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-family: 'Courier New', monospace;
+        }
+        .cursor {
+            position: absolute;
+            height: 20px;
+            width: 2px;
+            background-color: #ff6347;
+            animation: blink 0.7s infinite;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 80%;
+        }
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+        button {
+            padding: 10px 20px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+        .change-button {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .submit-button {
+            background-color: #008CBA;
+            color: white;
+        }
+        .result {
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .colorful {
+            color: #ff6347;
+            font-size: 20px;
+            animation: rainbow 3s infinite;
+        }
+        @keyframes rainbow {
+            0% { color: #ff6347; }
+            20% { color: #ffeb3b; }
+            40% { color: #4caf50; }
+            60% { color: #2196f3; }
+            80% { color: #9c27b0; }
+            100% { color: #ff6347; }
+        }
+        .loading {
+            display: inline-block;
+            font-size: 20px;
+            margin-left: 5px;
+        }
+        .riddle-paragraph {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h2>映宇宙谜语机</h2>
+    <div id="questionInfo"></div>
+    <p id="riddle"></p>
+    <div class="input-container">
+        <input type="text" id="userAnswer" placeholder="请输入你的答案" oninput="moveCursor()">
+        <div class="cursor"></div>
+    </div>
+    <br>
+    <div id="analyzing" style="display: none; margin-top: 10px;">
+        <span class="colorful">小映</span>正在<span class="colorful">自动</span>帮您回答中<span class="loading" id="loadingText">...</span>
+    </div>
+    <br>
+    <button class="submit-button" >提交答案</button>
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+    const riddles = [
+        { question: "映照未来，谁能引领未来的光芒？" },
+        { question: "宇宙无垠，谁是星辰之间的统帅？" },
+        { question: "宙中无双，谁掌控万物的命运？" },
+        { question: "全力以赴，哪个团队所向披靡？" },
+        { question: "猿族崛起，谁能引领银河的征程？" },
+        { question: "暴风骤雨，谁能带来财富的转机？" },
+        { question: "富贵荣华，谁是成功的象征？" }
+    ];
+
+    let correctAnswer = "映宇宙全猿暴富";
+    let currentIndex = 0;
+
+    function changeQuestion() {
+        if (currentIndex < riddles.length) {
+            document.getElementById("questionInfo").innerText = `问题 ${currentIndex + 1} / ${riddles.length}`;
+            document.getElementById("riddle").innerText = riddles[currentIndex].question;
+            document.getElementById("result").innerText = "";
+            document.getElementById("analyzing").style.display = "none";
+            document.getElementById("userAnswer").value = "";
+            showAnalyzingMessage();
+        } else {
+            showResults();
+        }
+    }
+
+    function showAnalyzingMessage() {
+        document.getElementById("analyzing").style.display = "block";
+        const loadingText = document.getElementById('loadingText');
+        let count = 0;
+
+        const loadingInterval = setInterval(() => {
+            loadingText.innerText = '.'.repeat(count % 4); // 更新省略号
+            count++;
+        }, 500); // 每500毫秒更新一次
+
+        setTimeout(() => {
+            clearInterval(loadingInterval); // 清除加载动画
+            simulateTyping(correctAnswer);
+            setTimeout(checkAnswer, 900);
+        }, 200);
+    }
+
+    function simulateTyping(text) {
+        const inputField = document.getElementById("userAnswer");
+        inputField.value = "";
+        let index = 0;
+
+        const typingInterval = setInterval(() => {
+            if (index < text.length) {
+                inputField.value += text.charAt(index);
+                index++;
+                moveCursor();
+            } else {
+                clearInterval(typingInterval);
+            }
+        }, 80);
+    }
+
+    function moveCursor() {
+        const inputField = document.getElementById("userAnswer");
+        const cursor = document.querySelector('.cursor');
+        const textLength = inputField.value.length;
+        const inputWidth = inputField.clientWidth;
+        const letterWidth = inputWidth / (inputField.placeholder.length + 1);
+        cursor.style.left = `${textLength * letterWidth + 5}px`;
+    }
+
+    function checkAnswer() {
+        let userAnswer = document.getElementById("userAnswer").value.trim();
+        let result = document.getElementById("result");
+
+        if (userAnswer === correctAnswer) {
+            result.innerText = "恭喜你，答对了！谜底就是“" + correctAnswer + "”！";
+            result.style.color = "green";
+        } else {
+            result.innerText = "很遗憾，答错了！正确谜底是“" + correctAnswer + "”。";
+            result.style.color = "red";
+        }
+
+        currentIndex++;
+        setTimeout(changeQuestion, 800);
+    }
+
+    function showResults() {
+        const resultContainer = document.createElement('div');
+        resultContainer.className = "result";
+        resultContainer.innerHTML = `
+            <p class="riddle-paragraph"><span class="colorful">映</span>照未来，谁能引领未来的光芒？</p>
+            <p class="riddle-paragraph"><span class="colorful">宇</span>宙无垠，谁是星辰之间的统帅？</p>
+            <p class="riddle-paragraph"><span class="colorful">宙</span>中无双，谁掌控万物的命运？</p>
+            <p class="riddle-paragraph"><span class="colorful">全</span>力以赴，哪个团队所向披靡？</p>
+            <p class="riddle-paragraph"><span class="colorful">猿</span>族崛起，谁能引领银河的征程？</p>
+            <p class="riddle-paragraph"><span class="colorful">暴</span>风骤雨，谁能带来财富的转机？</p>
+            <p class="riddle-paragraph"><span class="colorful">富</span>贵荣华，谁是成功的象征？</p>
+        `;
+        document.body.appendChild(resultContainer);
+    }
+
+    // 初始化游戏
+    changeQuestion();
+</script>
+
+</body>
+</html>
